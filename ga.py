@@ -26,8 +26,8 @@ def tournament_selection(k, chromosomes):
     highest_fitness = 0
     chosen_chromosome = competitors[0]
     for chromosome in competitors:
-        if chromosome.fitness() > highest_fitness:
-            highest_fitness = chromosome.fitness()
+        if chromosome.fitness > highest_fitness:
+            highest_fitness = chromosome.fitness
             chosen_chromosome = chromosome
 
     return chosen_chromosome
@@ -52,15 +52,13 @@ class Chromosome:
         self.id = id
         self.length = length
         self.genes = random_chromosome(length)
+        self.fitness = 0
 
     def mutate(self):
         for i in range(len(self.genes)):
             if (random.randint(0, self.length/10)) == 0:
                 self.genes[i] = 1 - self.genes[i]
 
-    def fitness(self, id):
-        return 1 / get_cpu_time("../cs4202_gensched/gem5/exps/" + id + "/sched_stats.txt")
-        
     def __repr__(self):
         return str(self.genes)
         
@@ -71,12 +69,12 @@ class Population:
         self.size = population_size
         self.chromosomes = []
         for i in range(population_size):
-            self.chromosomes.append(Chromosome(chromosome_length))
+            self.chromosomes.append(Chromosome(chromosome_length, i))
 
     def fitness(self):
         total_fitness = 0
         for chromosome in self.chromosomes:
-            total_fitness += chromosome.fitness()
+            total_fitness += chromosome.fitness
 
         return total_fitness / self.size
 
@@ -87,7 +85,7 @@ class Population:
 
         total_fitness = 0
         for chromosome in self.chromosomes:
-            total_fitness += chromosome.fitness()
+            total_fitness += chromosome.fitness
         
         while len(children) < self.size:
             mother = tournament_selection(3, self.chromosomes)
@@ -101,7 +99,7 @@ class Population:
 
     def elites(self, num_elites):
         last_gen = self.chromosomes
-        fitness_map = {k: v for (k, v) in zip(last_gen, [c.fitness() for c in last_gen])}
+        fitness_map = {k: v for (k, v) in zip(last_gen, [c.fitness for c in last_gen])}
 
         best = sorted(fitness_map.items(), key=operator.itemgetter(1))
         best.reverse()
@@ -115,7 +113,7 @@ def get_cpu_time(file):
 
     return (output[output.index("Total_time=") + 1])
  
-
+'''
 print(get_cpu_time("../cs4202_gensched/gem5/exps/1/sched_stats.txt"))
     
 p = Population(10, 1000000)
@@ -126,4 +124,4 @@ for i in range(500):
     print("generation " + str(i) + " , fitness: " + str(p.fitness()) + " , elites: " + str(num_elites) + " , best: " + str(p.elites(1)[0].fitness()))
 
 print(p.fitness())
-
+'''

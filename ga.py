@@ -22,7 +22,6 @@ def tournament_selection(k, chromosomes):
     competitors = []
     for i in range(k):
         competitors.append(chromosomes[i])
-
         
     highest_fitness = 0
     chosen_chromosome = competitors[0]
@@ -34,22 +33,23 @@ def tournament_selection(k, chromosomes):
     return chosen_chromosome
 
 
-def mate(mother, father):
+def mate(mother, father, id):
     crossover = random.randint(0, mother.length)
     mother_genes = mother.genes[:crossover]
     father_genes = father.genes[crossover:]
 
-    child1 = Chromosome(mother.length)
+    child1 = Chromosome(mother.length, id)
     child1.genes = mother_genes + father_genes
 
-    child2 = Chromosome(father.length)
+    child2 = Chromosome(father.length, id+1)
     child2.genes = father_genes + mother_genes
 
     return [child1, child2]
 
         
 class Chromosome:
-    def __init__(self, length):
+    def __init__(self, length, id):
+        self.id = id
         self.length = length
         self.genes = random_chromosome(length)
 
@@ -58,8 +58,8 @@ class Chromosome:
             if (random.randint(0, self.length/10)) == 0:
                 self.genes[i] = 1 - self.genes[i]
 
-    def fitness(self):
-        return sum(self.genes)
+    def fitness(self, id):
+        return 1 / get_cpu_time("../cs4202_gensched/gem5/exps/" + id + "/sched_stats.txt")
         
     def __repr__(self):
         return str(self.genes)
@@ -114,12 +114,11 @@ def get_cpu_time(file):
     output = f.split("\t")
 
     return (output[output.index("Total_time=") + 1])
+ 
 
-
-get_cpu_time("../CS4202_gensched/gem5/exps/1/sched_stats.txt")
+print(get_cpu_time("../cs4202_gensched/gem5/exps/1/sched_stats.txt"))
     
-'''
-p = Population(20, 1000000)
+p = Population(10, 1000000)
 print(p.fitness())
 for i in range(500):
     num_elites = random.randint(1, int(p.size/2))
@@ -127,4 +126,4 @@ for i in range(500):
     print("generation " + str(i) + " , fitness: " + str(p.fitness()) + " , elites: " + str(num_elites) + " , best: " + str(p.elites(1)[0].fitness()))
 
 print(p.fitness())
-'''
+

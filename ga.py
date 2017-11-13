@@ -33,23 +33,22 @@ def tournament_selection(k, chromosomes):
     return chosen_chromosome
 
 
-def mate(mother, father, id):
+def mate(mother, father):
     crossover = random.randint(0, mother.length)
     mother_genes = mother.genes[:crossover]
     father_genes = father.genes[crossover:]
 
-    child1 = Chromosome(mother.length, id)
+    child1 = Chromosome(mother.length)
     child1.genes = mother_genes + father_genes
 
-    child2 = Chromosome(father.length, id+1)
+    child2 = Chromosome(father.length)
     child2.genes = father_genes + mother_genes
 
     return [child1, child2]
 
         
 class Chromosome:
-    def __init__(self, length, id):
-        self.id = id
+    def __init__(self, length):
         self.length = length
         self.genes = random_chromosome(length)
         self.fitness = 0
@@ -69,7 +68,7 @@ class Population:
         self.size = population_size
         self.chromosomes = []
         for i in range(population_size):
-            self.chromosomes.append(Chromosome(chromosome_length, i))
+            self.chromosomes.append(Chromosome(chromosome_length))
 
     def fitness(self):
         total_fitness = 0
@@ -88,8 +87,8 @@ class Population:
             total_fitness += chromosome.fitness
         
         while len(children) < self.size:
-            mother = tournament_selection(3, self.chromosomes)
-            father = tournament_selection(3, self.chromosomes)
+            mother = tournament_selection(5, self.chromosomes)
+            father = tournament_selection(5, self.chromosomes)
             children += mate(mother, father)
 
         for child in children:

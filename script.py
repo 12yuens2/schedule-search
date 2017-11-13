@@ -8,6 +8,6 @@ def get_cpu_time():
 
     return (output[output.index("Total_time=") + 1])
 
-subprocess.run(["build/ARM/gem5.opt", "-d", "/tmp/exps/result", "configs/sched-blackscholes_gen.py", "--machine-type=VExpress_EMM64"])
+subprocess.run(["build/ARM/gem5.opt", "-d", "/tmp/exps/result", "configs/sched-bodytrack_gen.py", "--machine-type=VExpress_EMM64"])
 
 

@@ -56,11 +56,29 @@
 
 \section{Introduction}
 
+
+In this practical, a modern scheduling approach for CPUs is looked into, discussing how the approach works and where the approach performs well or poorly. 
+
+Next, a genetic algorithm was implemented to explore the search space of possible schedules with the GEM5 simulator on two benchmarks. The schedules produced by the genetic algorithm are then compared with both the default approach of the simulator and from a completely random schedule to gain an understanding of the scheduling optimisation space.
+
 \section{Task 1}
 
 \section{Task 2}
 
 \subsection{Methodology}
+A genetic algorithm was chosen instead of some form of hill-climbing algorithm
+- no obvious direction for climbing  higher, unclear how to change bits except going through all, which would be too many combinations
+- easy to fall into local minimum 
+- eg if only change lower half of schedule, not exploring changing the top half
+- randomly restart top half to escape minima doesn't work because affects entire schedule
+- ga with crossover reproduction allows exploring different "better" top halves of the schedule
+- mutation avoids local minima
+
+- issue with ga is a bit slow to converge and may miss some maxima
+
+
+
+- if schedule is too short, then the simulator will fail and return 0 for that fitness -> this allows removing potential bad schedules
 
 \subsection{Results}
 

@@ -17,31 +17,21 @@ def ssh_process(hostname, script):
 def get_cpu_time(file):
     f = subprocess.check_output(["tail", "--lines=2", file]).decode("utf-8")
     output = f.split("\t")
-
-    return (output[output.index("Total_time=") + 1])
-
-
-#hosts = ["pc3-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,70)]
-hosts = ["pc2-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,99)]
-
-
-# population 25:
-# mutation per genes: random 0 - length/10
-# crossover: random
-# selection: tournament 5
-# experiment_data = open("blackscholes1.data", "w")
+    
+    try:
+        v = (output[output.index("Total_time=") + 1])
+        return v
+    except ValueError:
+        return "0"
 
 
-# population 25:
-# mutation per genes: random 0 - length/10
-# crossover: random
-# selection: tournament 5
-experiment_data = open("bodytrack1.data", "w")
 
-population = Population(25, 1000000)
-for generation in range(30):
-    experiment_data.write("Generation " + str(generation) + ": \n")
-    print("Start generation " + str(generation) + " at " + str(datetime.datetime.now()))
+def get_active_hosts():
+    #hosts = ["pc3-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,70)]
+    hosts = ["pc2-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,99)]
+    hosts.remove("pc2-026-l.cs.st-andrews.ac.uk")
+    hosts.remove("pc2-040-l.cs.st-andrews.ac.uk")
+    hosts.remove("pc2-093-l.cs.st-andrews.ac.uk")
 
     print("Pinging hosts...")
     activehosts = []
@@ -54,12 +44,45 @@ for generation in range(30):
 
     random.shuffle(activehosts)
 
+    return activehosts
+
+
+#population 30:
+# mutation per genes: random 0 - length/10
+# crossover: random
+# selection: tournament 3
+#experiment_data = open("blackscholes3.data", "w")
+
+
+# population 40:
+# mutation per genes: random 0 - length/10
+# crossover: random
+# selection: tournament 3
+experiment_data = open("blackscholes2.data", "w")
+
+
+# population 40:
+# mutation per genes: random 0 - length/25
+# crossover: random
+# selection: tournament 3
+#experiment_data = open("blackscholes1.data", "w")
+
+
+
+population = Population(40, 200000)
+for generation in range(30):
+    experiment_data.write("Generation " + str(generation) + ": \n")
+    print("Start generation " + str(generation) + " at " + str(datetime.datetime.now()))
+
+    activehosts = get_active_hosts()
+
     
     processes = {}
     i = 0
     for chromosome in population.chromosomes:
         binRepf = open("binRep1.txt", "w")
         binRepf.write("".join(map(str, chromosome.genes)))
+        binRepf.close()
 
         # Write schedule to local storage
         subprocess.run(ssh_process(activehosts[i], "write.py"), stdout=FNULL)
@@ -90,19 +113,21 @@ for generation in range(30):
             time.sleep(1)
 
             # Update chromosome fitness
-            experiment_data.write(get_cpu_time("sched_stats.txt") + ", ")
-            print("Host: " + host + " time taken: " + get_cpu_time("sched_stats.txt"))
-            experiment_data.write()
-            chromosome.fitness = 1 / int(get_cpu_time("sched_stats.txt"))
+            time_taken = get_cpu_time("sched_stats.txt")
+            experiment_data.write(time_taken + ", ")
+            print("Host: " + host + " time taken: " + time_taken)
 
+            if int(time_taken) > 0:
+                chromosome.fitness = 1 / int(time_taken)
 
     # Save best schedule 
     best_child = population.elites(1)[0]
-    best_file = open("best-bodytrack.txt", "w")
+    best_file = open("best-blackscholes2.txt", "w")
     best_file.write("".join(map(str, best_child.genes)))
+    best_file.close()
 
     
-    print("generation " + str(generation) + " finished hosts: " + str(finished_hosts) + "/" + str(len(processes)) + " best time: " + str(population.elites(1)[0].fitness))
+    print("generation " + str(generation) + " finished hosts: " + str(finished_hosts) + "/" + str(len(processes)) + " best time: " + str(1 / population.elites(1)[0].fitness))
     print("---------------------------------------")
 
     num_elites = random.randint(1, int(population.size/2))
@@ -110,3 +135,6 @@ for generation in range(30):
     population.evolve(num_elites)
 
     experiment_data.write("\n--------------------------\n")
+    experiment_data.flush()
+
+experiment_data.close()

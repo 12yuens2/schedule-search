@@ -21,7 +21,8 @@ def roulette_selection(total_fitness, chromosomes):
 def tournament_selection(k, chromosomes):
     competitors = []
     for i in range(k):
-        competitors.append(chromosomes[i])
+        r = random.randint(0, len(chromosomes) - 1)
+        competitors.append(chromosomes[r])
         
     highest_fitness = 0
     chosen_chromosome = competitors[0]
@@ -35,14 +36,12 @@ def tournament_selection(k, chromosomes):
 
 def mate(mother, father):
     crossover = random.randint(0, mother.length)
-    mother_genes = mother.genes[:crossover]
-    father_genes = father.genes[crossover:]
 
     child1 = Chromosome(mother.length)
-    child1.genes = mother_genes + father_genes
+    child1.genes = mother.genes[:crossover] + father.genes[crossover:]
 
     child2 = Chromosome(father.length)
-    child2.genes = father_genes + mother_genes
+    child2.genes = father.genes[:crossover] + mother.genes[crossover:]
 
     return [child1, child2]
 
@@ -87,11 +86,11 @@ class Population:
             total_fitness += chromosome.fitness
         
         while len(children) < self.size:
-            mother = tournament_selection(5, self.chromosomes)
-            father = tournament_selection(5, self.chromosomes)
+            mother = tournament_selection(3, self.chromosomes)
+            father = tournament_selection(3, self.chromosomes)
             children += mate(mother, father)
 
-        for child in children:
+        for child in children[num_elites:]:
             child.mutate()
 
         self.chromosomes = children

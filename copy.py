@@ -1,3 +1,3 @@
 import subprocess
 
-subprocess.run(["cp", "/tmp/exps/result/sched_stats.txt", "."])
+subprocess.run(["cp", "/tmp/sy35/exps/result/sched_stats.txt", "."])

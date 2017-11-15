@@ -9,11 +9,23 @@
 \usepackage{enumitem}
 \usepackage{syntax}
 \usepackage{csquotes}
-%\usepackage[backend=er]{biblatex}
-%\addbibresource{references.bib}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{references.bib}
 
 \usepackage{tikz}
 \usetikzlibrary{automata,positioning}
+\tikzset{
+  gray box/.style={
+    fill=gray!20,
+    draw=gray,
+    minimum width={2*#1ex},
+    minimum height={2em},
+  },
+  annotation/.style={
+    anchor=north,
+  }
+}
+
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -55,12 +67,93 @@
 \maketitle
 
 \section{Introduction}
-In this practical, a modern scheduling approach for CPUs is looked into, discussing how the approach works and where the approach performs well or poorly. 
+CPU scheduling is vital for the multitasking environment of modern operating systems. Processes waiting for I/O can be switched out to prevent wasted CPU cycles, but any process can be pre-empted for better user interactivity, efficiency and fairness \cite{os}. As a result, it is important to understand the effects of scheduling on performance.
+\n
+First, a round-robin scheduling approach for CPUs is looked into, discussing how the approach works and where the approach performs well or poorly. 
 \n
 Next, a genetic algorithm was implemented to explore the search space of possible schedules with the GEM5 simulator on two benchmarks. The schedules produced by the genetic algorithm are then compared with both the default approach of the simulator and from a completely random schedule to gain an understanding of the scheduling optimisation space.
 
 \section{Task 1}
+The round-robin CPU scheduling approach is similar to a simple First-Come First-Served scheduling approach, but all processes bursts are limited by a time quantum. Processes will be pre-empted if they run longer than the time quantum to give the next processes in the queue a chance to run. Processes that make an I/O request or finish before the time quantum are also moved off the CPU \cite{rr-paper}.
+\n
+A circular queue of processes that are ready to be executed is maintained by the scheduler. New processes join at the end of the queue. The scheduler chooses and removes the first process in the queue and after the processes has finished its time quantum it is moved back to the end of the queue. For example, consider the following processes in the ready queue.
+\n
+\begin{figure}[H]
+\centering
+\begin{tabular}{c c}
+\textbf{Process} & \textbf{Burst time} \\
+\hline
+$P_{1}$ & 17 \\
+$P_{2}$ & 3 \\
+$P_{3}$ & 4 \\
+\end{tabular}
+\end{figure}
+\noindent 
+A time quantum of 3 would result in the following schedule and wait times:
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=-0.5pt]
+  \node [gray box=4.5] (p1) {\(P_{1}\)};
+  \node [gray box=4.5, right=of p1] (p2) {\(P_{2}\)};
+  \node [gray box=4.5, right=of p2] (p3) {\(P_{3}\)};
+  \node [gray box=4.5, right=of p3] (p4) {\(P_{1}\)};
+  \node [gray box=1.5, right=of p4] (p5) {\(P_{3}\)};
+  \node [gray box=4.5, right=of p5] (p6) {\(P_{1}\)};
+  \node [gray box=4.5, right=of p6] (p7) {\(P_{1}\)};
+  \node [gray box=4.5, right=of p7] (p8) {\(P_{1}\)};
+  \node [gray box=3, right=of p8] (p9) {\(P_{1}\)};
 
+  \node [annotation] at (p1.south west) {0};
+  \node [annotation] at (p1.south east) {3};
+  \node [annotation] at (p2.south east) {6};
+  \node [annotation] at (p3.south east) {9};
+  \node [annotation] at (p4.south east) {12};
+  \node [annotation] at (p5.south east) {13};
+  \node [annotation] at (p6.south east) {16};
+  \node [annotation] at (p7.south east) {19};
+  \node [annotation] at (p8.south east) {22};
+  \node [annotation] at (p9.south east) {24};
+\end{tikzpicture}
+\end{figure}
+\noindent Wait times:
+\begin{itemize}
+\item $P_{1}$: 7 time units
+\item $P_{2}$: 3 time units
+\item $P_{3}$: 9 time units
+\end{itemize}
+\noindent Average wait time = $19 / 3 = 6.33$ time units.
+\n
+However, a time quantum of 10 would result in a much longer average wait time.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=-0.5pt]
+  \node [gray box=15] (p1) {\(P_{1}\)};
+  \node [gray box=4.5, right=of p1] (p2) {\(P_{2}\)};
+  \node [gray box=6, right=of p2] (p3) {\(P_{3}\)};
+  \node [gray box=10.5, right=of p3] (p4) {\(P_{1}\)};
+
+  \node [annotation] at (p1.south west) {0};
+  \node [annotation] at (p1.south east) {10};
+  \node [annotation] at (p2.south east) {13};
+  \node [annotation] at (p3.south east) {17};
+  \node [annotation] at (p4.south east) {24};
+\end{tikzpicture}
+\end{figure}
+\noindent Wait times:
+\begin{itemize}
+\item $P_{1}$: 7 time units
+\item $P_{2}$: 10 time units
+\item $P_{3}$: 13 time units
+\end{itemize}
+\noindent Average wait time = $30 / 3 = 10$ time units.
+\n
+Changing the size of the time quantum affected the average waiting time, as process 2 and 3 had to wait much longer before getting a chance to run. However, this comes at a trade-off of less context switches. With a quantum of 10, only 3 context switches were required, whereas with a quantum of 3, 8 context switches were required. 
+\n
+An issue with the simple round-robin scheduling approach is the long average waiting time. Given $n$ processes in the ready queue with a time quantum of $t$, each process only gets $t$ time to run every $nt$ time units and must wait at most $(n - 1) \times t$ before each turn. Therefore, the length of the time quantum heavily impacts the performance of the round-robin approach. A very long time quantum will effectively be the same as a FCFS approach whereas a very short time quantum results in many context switches between the processes, which wastes CPU cycles on context switching rather than useful computation. 
+\n
+Round-robin performs well for load balancing if the processes all have similar bursts times. 
+\n
+Long queue leads to high response time and high turnaround time as a simple round-robin approach adds new processes to the tail of the queue, giving a response time of at most $(n - 1) \times t$ time units where $n$ is the number of processes in the queue and $t$ is the time quantum.
 \section{Task 2}
 
 \subsection{Methodology}
@@ -85,6 +178,8 @@ Improvements on GA:
 
 Increased population due to stagnation at local maxima for more diversity and less likely to choose similar parents in population
 
+Larger population explores more of the search space, but converges slower
+
 Increased mutation also due to local maxima. Perhaps crossover is not effective because if the schedule is good, only some portion of the top half of the binary is used, so low mutation rate where mutation happens in lower half has no effect.
 
 -> Change crossover to must be halfway point or above? -> Prevent low crossover point which has little effect
@@ -106,7 +201,7 @@ Optimise size of schedule as much as possible to prevent entire lower half being
 
 \subsection{Evaluation}
 
-
+\printbibliography
 
 \end{document}
 

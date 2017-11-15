@@ -9,8 +9,8 @@
 \usepackage{enumitem}
 \usepackage{syntax}
 \usepackage{csquotes}
-\usepackage[backend=biber]{biblatex}
-\addbibresource{references.bib}
+%\usepackage[backend=er]{biblatex}
+%\addbibresource{references.bib}
 
 \usepackage{tikz}
 \usetikzlibrary{automata,positioning}
@@ -55,10 +55,8 @@
 \maketitle
 
 \section{Introduction}
-
-
 In this practical, a modern scheduling approach for CPUs is looked into, discussing how the approach works and where the approach performs well or poorly. 
-
+\n
 Next, a genetic algorithm was implemented to explore the search space of possible schedules with the GEM5 simulator on two benchmarks. The schedules produced by the genetic algorithm are then compared with both the default approach of the simulator and from a completely random schedule to gain an understanding of the scheduling optimisation space.
 
 \section{Task 1}
@@ -76,9 +74,33 @@ A genetic algorithm was chosen instead of some form of hill-climbing algorithm
 
 - issue with ga is a bit slow to converge and may miss some maxima
 
+- because we don't know how schedule affects time, unsure if crossover/selection/mutation strategies are suitable
+
+Improvements on GA:
+- increased population
+- crossover only top halves of parents
+- increased mutation due to local minima
+- increased/decreased tournament selection size
+- less or no elites
+
+Increased population due to stagnation at local maxima for more diversity and less likely to choose similar parents in population
+
+Increased mutation also due to local maxima. Perhaps crossover is not effective because if the schedule is good, only some portion of the top half of the binary is used, so low mutation rate where mutation happens in lower half has no effect.
+
+-> Change crossover to must be halfway point or above? -> Prevent low crossover point which has little effect
+
+Elites introduced to keep good schedules, number of elites randomised so not always the same 
+
+Smaller tournament size to allow weak individuals to increase more diversity
+Larger tournament size means more likely to have strong individuals for faster convergence
+
+Optimise size of schedule as much as possible to prevent entire lower half being unused
 
 
 - if schedule is too short, then the simulator will fail and return 0 for that fitness -> this allows removing potential bad schedules
+
+\subsection{Experimentation}
+
 
 \subsection{Results}
 
@@ -87,3 +109,6 @@ A genetic algorithm was chosen instead of some form of hill-climbing algorithm
 
 
 \end{document}
+
+
+

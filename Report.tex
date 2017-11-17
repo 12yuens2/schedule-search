@@ -163,7 +163,7 @@ Long queue leads to high response time and high turnaround time as a simple roun
 \subsection{Methodology}
 A genetic algorithm was chosen as a means to explore the search space of binary schedules. Because of the large optimisation space of schedules, a genetic algorithm with mutation adds elements of randomness to help explore more of the search space compared to a hill climbing algorithm which can get easily stuck in local maxima. Furthermore, hill climbing with random restart will only try to explore another unrelated area of the search space for a maximum without taking into account the previous local maxima. 
 \n
-The binary schedules are deterministic, that is to say the same schedule will always take the same time to run. Additionally, if two schedules share the same initial $n$ bits, they will run identically until they differ. This means that where the bits change in the binary stream matters. Given a binary schedule, if the first few bits are modified, the schedule will be completely different. If only the last few bits are modified, then the schedule is only different at those last few bits.
+The simulator is deterministic, that is to say the same schedule will always take the same time to run. Additionally, if two schedules share the same initial $n$ bits, they will run identically until they differ. This means that where the bits change in the binary stream matters. Given a binary schedule, if the first few bits are modified, the schedule will be completely different. If only the last few bits are modified, then the schedule is only different at those last few bits.
 \n
 instead of some form of hill-climbing algorithm
 - no obvious direction for climbing  higher, unclear how to change bits except going through all, which would be too many combinations
@@ -214,6 +214,15 @@ In the first na\"{i}ve experiment, the following parameters were chosen:
 \end{itemize}
 The population size was chosen as a size that was not too small or too large to start with. Fine tuning the population size for the specific task of finding a fast schedule will require more work, but starting with a medium sized population will give an indication as to whether this is too small or too large. A population that is too small will be stuck in a local maximum and unable to find better solutions, while a population that is too large would lead to a slow rate of convergence \cite{ga-size}. 
 \subsubsection{Experiment 2}
+After the first experiment, it could be seen the algorithm starts to stagnate soon. After a few generations, either because of a lack of mutation or population size, 
+\begin{itemize}
+\item \textbf{Population size}: 40
+\item \textbf{Chromosome length}: 100000
+\item \textbf{Mutation probability per gene}: $\dfrac{1}{(l/100)}$
+\item \textbf{Crossover point}: Random
+\item \textbf{Selection}: Tournament with 5 competitors
+\end{itemize}
+
 
 \subsection{Results}
 

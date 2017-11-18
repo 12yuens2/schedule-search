@@ -9,6 +9,7 @@
 \usepackage{enumitem}
 \usepackage{syntax}
 \usepackage{csquotes}
+\usepackage{pgfplots}
 \usepackage[backend=biber]{biblatex}
 \addbibresource{references.bib}
 
@@ -206,7 +207,7 @@ A genetic algorithm was chosen as a means to explore the search space of binary 
 The genetic algorithm that was implemented follows three basic steps \cite{ga}:
 \begin{enumerate}
 \item \textbf{Selection} - Select parents to use for reproduction of next generation. The fitter the chromosome, the more likely it will be chosen for reproduction. \textbf{Elitism} is also implemented, keeping exact clones of the most fit individuals so the best schedules are not lost.
-\item \textbf{Crossover} - Two new child schedules are created from the parents.
+\item \textbf{Crossover} - Mix the genes of the parents to create two new child schedules.
 \item \textbf{Mutation} - Genes (bits) of all child schedules have a chance to be mutated to increase diversity and prevent the algorithm from being stuck in a local maxima.
 \end{enumerate}
 \subsubsection{Selection}
@@ -214,7 +215,7 @@ A tournament selection method was used to select parents for reproduction. This 
 \n
 The same individuals are allowed to be selected multiple times for reproduction for better convergence. It is also done so the randomness in the crossover and mutation stages do not lead to a complete loss of strong genes. Additionally, a small random number of elites are selected to be clone in each generation as part of \textbf{Elitism} to keep the fittest individuals. This is done to ensure the best schedules survive every generation as the effect of crossover and mutation on creating consistently better schedules is not known due to the size and complexity of the search space. The number of elites kept is randomised so the same elites are not kept every generation if the algorithm is at a local maximum.
 \subsubsection{Crossover}
-The simulator is deterministic, that is to say the same schedule will always take the same time to run. Additionally, if two schedules share the same initial $n$ bits, they will run identically until they differ. This means that where the bits change in the binary stream matters. Given a binary schedule, if the first few bits are modified, the schedule will be completely different. If only the last few bits are modified, then the schedule is only different at those last few bits. The crossover step for genetic algorithms is quite suited for this behaviour. The children created by the two parents will each contain the first $n$ bits from each parent and the rest from the other parent. If both parents were good schedules, this explores changing and mixing the second half of the schedule to potentially find an even better schedule. 
+The simulator is deterministic, that is to say the same schedule will always take the same time to run. Additionally, if two schedules share the same initial $n$ bits, they will run identically until they differ. This means that where the bits change in the binary stream matters. Given a binary schedule, if the first few bits are modified, the rest of the schedule may be interpreted completely differently even if no other bits are modified. If only the last few bits are modified, then the schedule is only different at those last few bits. The crossover step for genetic algorithms is quite suited for this behaviour. The children created by the two parents will each contain the first $n$ bits from each parent and the rest from the other parent. If both parents were good schedules, this explores changing and mixing the second half of the schedule to potentially find an even better schedule without losing the good performance from the first half of the schedule. 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
@@ -268,7 +269,7 @@ The mutation aspect of the algorithm will add diversity to the population, poten
 \caption{Children from figure \ref{fig:crossover} with mutation}
 \label{fig:mutation}
 \end{figure}
-\noindent It is important to note that although the combination of selection, crossover and mutation can lead to a systematic way of searching for better schedules while taking into account previous strong genes and keeping the best individuals, the complexity of the search space and lack of heuristic on how changes to the bits directly affect the time taken...
+\noindent It is important to note that although the combination of selection, crossover and mutation can lead to a systematic way of searching for better schedules while taking into account previous strong genes and keeping the best individuals, the complexity of the search space and lack of understanding on how changes to the bits directly affect the time taken make the performance of genetic algorithm unpredictable. It could well be that randomly creating schedules is an easier and faster method to find the fastest schedule. 
 
 \subsubsection{Parameters and other optimisations}
 
@@ -280,6 +281,8 @@ Optimise size of schedule as much as possible to prevent entire lower half being
 
 \subsection{Experimentation}
 The two benchmarks \texttt{sched-blackscholes_gen} and \texttt{sched-bodytrack_gen} are used in the experimentation. Initially, a na\"{i}ve experiment was run using arbitrary parameters to see how well the genetic algorithm performed after many generations. Afterwards, the experiment was improved by adjusting the parameters to improve diversity. The results of both experiments are later compared with the default weighted RNG scheduler and a completely random approach. 
+\n
+
 \subsubsection{Experiment 1}
 In the first na\"{i}ve experiment, the following parameters were chosen:
 \begin{itemize}
@@ -291,19 +294,8 @@ In the first na\"{i}ve experiment, the following parameters were chosen:
 \end{itemize}
 The population size was chosen as a size that was not too small or too large to start with. Fine tuning the population size for the specific task of finding a fast schedule will require more work, but starting with a medium sized population will give an indication as to whether this is too small or too large. A population that is too small will be stuck in a local maximum and unable to find better solutions, while a population that is too large would lead to a slow rate of convergence \cite{ga-size}.
 \subsubsection{Experiment 2}
-After the first experiment, it could be seen the algorithm starts to stagnate soon. After a few generations, either because of a lack of mutation or population size, the results 
-
-Improvements on GA:
-- increased population
-- crossover only top halves of parents
-- increased mutation due to local minima
-- increased/decreased tournament selection size
-- less or no elites
-
-Increased population due to stagnation at local maxima for more diversity and less likely to choose similar parents in population
-
-Larger population explores more of the search space, but converges slower
-
+From the first experiment, it was noticed that the algorithm starts to stagnate quickly. After a few generations, either because of a lack of mutation or population size, a large portion of each generation end up with the same schedule and fitness with little diversity. To fix this issue, the population and mutation probability is increased to increase diversity. The larger population and higher mutation rate explores more of the search space, but leads to slower convergence. To be able to keep strong individuals with the increased population and mutation, the number of individuals used in the tournament selection is also increased.
+\n
 Increased mutation also due to local maxima. Perhaps crossover is not effective because if the schedule is good, only some portion of the top half of the binary is used, so low mutation rate where mutation happens in lower half has no effect.
 \begin{itemize}
 \item \textbf{Population size}: 40
@@ -313,8 +305,23 @@ Increased mutation also due to local maxima. Perhaps crossover is not effective 
 \item \textbf{Selection}: Tournament with 5 competitors
 \end{itemize}
 
-
 \subsection{Results}
+
+\begin{figure}[H]
+\begin{tikzpicture}
+  \begin{axis}[ 
+    xlabel=$x$,
+    ylabel={$f(x) = x^2 - x +4$}
+  ] 
+    \addplot {x^2 - x +4}; 
+  \end{axis}
+\end{tikzpicture}
+\end{figure}
+
+
+- more time on genetic algorithm should tend to better result -> especially if given more diversity
+- random gets faster schedule quicker, but less likely over time to find good schedule, whereas genetic algorithm guarantees good schedule over time as long as high diversity.
+- ga can never/rarely get optimal schedule
 
 \subsection{Evaluation}
 

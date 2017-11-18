@@ -198,10 +198,10 @@ Round-robin performs well for load balancing if the processes all have similar b
 Some processes want/should have more share of the processor than others (concept for priority)
 \n
 Long queue leads to high response time and high turnaround time as a simple round-robin approach adds new processes to the tail of the queue, giving a response time of at most $(n - 1) \times t$ time units where $n$ is the number of processes in the queue and $t$ is the time quantum.
-\section{Task 2}
+\section{Task 2 - Search for high performance schedules}
 
 \subsection{Methodology}
-A genetic algorithm was chosen as a means to explore the search space of binary schedules. Because of the large optimisation space of schedules, a genetic algorithm with mutation adds elements of randomness to help explore more of the search space compared to a hill climbing algorithm which can get easily stuck in local maxima. Furthermore, hill climbing with random restart will only try to explore another unrelated area of the search space for a maximum without taking into account the previous local maxima. With a genetic algorithm, the next generation is created based on the previous generation, so good schedules can be maintained and modified through each generation. The fitness function used to evaluated a schedule is the total time taken of the execution of that schedule from the output of the simulation.
+A genetic algorithm was chosen as a means to explore the search space of binary schedules. Because of the large optimisation space of schedules, a genetic algorithm with mutation adds elements of randomness to help explore more of the search space compared to a hill climbing algorithm which can get easily stuck in local maxima. Furthermore, hill climbing with random restart will only try to explore another unrelated area of the search space for a maximum without taking into account the previous local maxima. With a genetic algorithm, the next generation is created based on the previous generation, so good schedules can be maintained and modified through each generation. The fitness function used to evaluated a schedule is the total time taken of the execution of that schedule from the output of the simulation. The less time taken, the fitter that individual. As a schedule is a binary string, this maps perfectly to a genetic chromosome, where each gene is a single bit.
 \n
 The genetic algorithm that was implemented follows three basic steps \cite{ga}:
 \begin{enumerate}
@@ -210,9 +210,11 @@ The genetic algorithm that was implemented follows three basic steps \cite{ga}:
 \item \textbf{Mutation} - Genes (bits) of all child schedules have a chance to be mutated to increase diversity and prevent the algorithm from being stuck in a local maxima.
 \end{enumerate}
 \subsubsection{Selection}
-
+A tournament selection method was used to select parents for reproduction. This method randomly selects a few chromosomes from the population, and chooses the most fit individual as the ``winner" of the tournament. Tournament selection was used for its simplicity and flexibility. The tournament size can be decreased to allow weaker individuals more chance to be selected for more diversity or increased to give them less chance for faster convergence. 
+\n
+The same individuals are allowed to be selected multiple times for reproduction for better convergence. It is also done so the randomness in the crossover and mutation stages do not lead to a complete loss of strong genes. Additionally, a small random number of elites are selected to be clone in each generation as part of \textbf{Elitism} to keep the fittest individuals. This is done to ensure the best schedules survive every generation as the effect of crossover and mutation on creating consistently better schedules is not known due to the size and complexity of the search space. The number of elites kept is randomised so the same elites are not kept every generation if the algorithm is at a local maximum.
 \subsubsection{Crossover}
-\noindent The simulator is deterministic, that is to say the same schedule will always take the same time to run. Additionally, if two schedules share the same initial $n$ bits, they will run identically until they differ. This means that where the bits change in the binary stream matters. Given a binary schedule, if the first few bits are modified, the schedule will be completely different. If only the last few bits are modified, then the schedule is only different at those last few bits. The crossover step for genetic algorithms is quite suited for this behaviour. The children created by the two parents will each contain the first $n$ bits from each parent and the rest from the other parent. If both parents were good schedules, this explores changing and mixing the second half of the schedule to potentially find an even better schedule. 
+The simulator is deterministic, that is to say the same schedule will always take the same time to run. Additionally, if two schedules share the same initial $n$ bits, they will run identically until they differ. This means that where the bits change in the binary stream matters. Given a binary schedule, if the first few bits are modified, the schedule will be completely different. If only the last few bits are modified, then the schedule is only different at those last few bits. The crossover step for genetic algorithms is quite suited for this behaviour. The children created by the two parents will each contain the first $n$ bits from each parent and the rest from the other parent. If both parents were good schedules, this explores changing and mixing the second half of the schedule to potentially find an even better schedule. 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
@@ -243,6 +245,7 @@ The genetic algorithm that was implemented follows three basic steps \cite{ga}:
 \caption{Example reproduction of children}
 \label{fig:crossover}
 \end{figure}
+\noindent There is only one single crossover point in the implementation as more complicated crossover techniques would take less advantage of the deterministic behaviour of the simulator and schedule. The crossover point is chosen randomly for more diversity as the same individual can be chosen as a parent multiple times. 
 \subsubsection{Mutation}
 The mutation aspect of the algorithm will add diversity to the population, potentially changing a child schedule completely. This leads to a loss of a potentially good schedule, especially if the mutation occurred early and the parents were fit, but allows searching through more of the optimisation space to try and find even better schedules.
 \begin{figure}[H]
@@ -265,19 +268,30 @@ The mutation aspect of the algorithm will add diversity to the population, poten
 \caption{Children from figure \ref{fig:crossover} with mutation}
 \label{fig:mutation}
 \end{figure}
+\noindent It is important to note that although the combination of selection, crossover and mutation can lead to a systematic way of searching for better schedules while taking into account previous strong genes and keeping the best individuals, the complexity of the search space and lack of heuristic on how changes to the bits directly affect the time taken...
 
-\noindent 
-instead of some form of hill-climbing algorithm
-- no obvious direction for climbing  higher, unclear how to change bits except going through all, which would be too many combinations
-- easy to fall into local minimum 
-- eg if only change lower half of schedule, not exploring changing the top half
-- randomly restart top half to escape minima doesn't work because affects entire schedule
-- ga with crossover reproduction allows exploring different "better" top halves of the schedule
-- mutation avoids local minima
+\subsubsection{Parameters and other optimisations}
 
-- issue with ga is a bit slow to converge and may miss some maxima
+Optimise size of schedule as much as possible to prevent entire lower half being unused
 
 - because we don't know how schedule affects time, unsure if crossover/selection/mutation strategies are suitable
+
+- if schedule is too short, then the simulator will fail and return 0 for that fitness -> this allows removing potential bad schedules
+
+\subsection{Experimentation}
+The two benchmarks \texttt{sched-blackscholes_gen} and \texttt{sched-bodytrack_gen} are used in the experimentation. Initially, a na\"{i}ve experiment was run using arbitrary parameters to see how well the genetic algorithm performed after many generations. Afterwards, the experiment was improved by adjusting the parameters to improve diversity. The results of both experiments are later compared with the default weighted RNG scheduler and a completely random approach. 
+\subsubsection{Experiment 1}
+In the first na\"{i}ve experiment, the following parameters were chosen:
+\begin{itemize}
+\item \textbf{Population size}: 25
+\item \textbf{Chromosome length}: 100000
+\item \textbf{Mutation probability per gene}: $\dfrac{1}{(l/10)}$ where $l$ is the length of the chromosome
+\item \textbf{Crossover point}: Random
+\item \textbf{Selection}: Tournament with 3 competitors
+\end{itemize}
+The population size was chosen as a size that was not too small or too large to start with. Fine tuning the population size for the specific task of finding a fast schedule will require more work, but starting with a medium sized population will give an indication as to whether this is too small or too large. A population that is too small will be stuck in a local maximum and unable to find better solutions, while a population that is too large would lead to a slow rate of convergence \cite{ga-size}.
+\subsubsection{Experiment 2}
+After the first experiment, it could be seen the algorithm starts to stagnate soon. After a few generations, either because of a lack of mutation or population size, the results 
 
 Improvements on GA:
 - increased population
@@ -291,32 +305,6 @@ Increased population due to stagnation at local maxima for more diversity and le
 Larger population explores more of the search space, but converges slower
 
 Increased mutation also due to local maxima. Perhaps crossover is not effective because if the schedule is good, only some portion of the top half of the binary is used, so low mutation rate where mutation happens in lower half has no effect.
-
--> Change crossover to must be halfway point or above? -> Prevent low crossover point which has little effect
-
-Elites introduced to keep good schedules, number of elites randomised so not always the same 
-
-Smaller tournament size to allow weak individuals to increase more diversity
-Larger tournament size means more likely to have strong individuals for faster convergence
-
-Optimise size of schedule as much as possible to prevent entire lower half being unused
-
-
-- if schedule is too short, then the simulator will fail and return 0 for that fitness -> this allows removing potential bad schedules
-
-\subsection{Experimentation}
-\subsubsection{Experiment 1}
-In the first na\"{i}ve experiment, the following parameters were chosen:
-\begin{itemize}
-\item \textbf{Population size}: 25
-\item \textbf{Chromosome length}: 100000
-\item \textbf{Mutation probability per gene}: $\dfrac{1}{(l/10)}$ where $l$ is the length of the chromosome
-\item \textbf{Crossover point}: Random
-\item \textbf{Selection}: Tournament with 3 competitors
-\end{itemize}
-The population size was chosen as a size that was not too small or too large to start with. Fine tuning the population size for the specific task of finding a fast schedule will require more work, but starting with a medium sized population will give an indication as to whether this is too small or too large. A population that is too small will be stuck in a local maximum and unable to find better solutions, while a population that is too large would lead to a slow rate of convergence \cite{ga-size}. 
-\subsubsection{Experiment 2}
-After the first experiment, it could be seen the algorithm starts to stagnate soon. After a few generations, either because of a lack of mutation or population size, 
 \begin{itemize}
 \item \textbf{Population size}: 40
 \item \textbf{Chromosome length}: 100000

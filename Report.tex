@@ -306,18 +306,196 @@ Increased mutation also due to local maxima. Perhaps crossover is not effective 
 \end{itemize}
 
 \subsection{Results}
+\subsubsection{Benchmark properties}
+The two benchmarks chosen for this experiment are \texttt{blackscholes} and \texttt{bodytrack}. 
+\begin{figure}[H]
+\begin{minipage}{0.6\textwidth}
+\begin{tikzpicture}[scale=0.7]
+\begin{axis}[
+    ybar,
+    title={\texttt{blackscholes} benchmark},
+   	title style={yshift=1em},
+    bar width=3em,
+    enlarge x limits=0.6,
+    legend style={at={(0.5,-0.15)},
+      anchor=north,legend columns=-1},
+    ylabel={Time taken},
+    symbolic x coords={Best,Average},
+    xtick=data,
+    ]
+\addplot coordinates {(Best,49708) (Average,67325)};
+\addplot coordinates {(Best,53932) (Average,66497.57)};
+\legend{Random,Default}
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+%
+\begin{minipage}{0.6\textwidth}
+\begin{tikzpicture}[scale=0.7]
+\begin{axis}[
+    ybar,
+    title={\texttt{bodytrack} benchmark},
+   	title style={yshift=1em},
+    bar width=3em,
+    enlarge x limits=0.6,
+    legend style={at={(0.5,-0.15)},
+      anchor=north,legend columns=-1},
+    ylabel={Time taken},
+    symbolic x coords={Best,Average},
+    xtick=data,
+    ]
+\addplot coordinates {(Best,186594) (Average,232141)};
+\addplot coordinates {(Best,200000) (Average,200000)};
+\legend{Random,Default}
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\caption{Best and average times taken by the random and default approach.}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    title={Coefficient of variation for the two benchmarks}
+   	title style={yshift=1em},
+    bar width=3em,
+    enlarge x limits=0.6,
+    legend style={at={(0.5,-0.15)},
+      anchor=north,legend columns=-1},
+    ymin=0,
+    ylabel={Standard deviation / Mean},
+    symbolic x coords={\texttt{blackscholes},\texttt{bodytrack}},
+    xtick=data,
+    ]
+\addplot coordinates {(\texttt{blackscholes},2140) (\texttt{bodytrack},764)};
+\addplot coordinates {(\texttt{blackscholes},662) (\texttt{bodytrack},100)};
+\legend{Random,Default}
+\end{axis}
+\end{tikzpicture}
+\caption{Coefficient of variation by the random and default approach.}
+\label{fig:variance}
+\end{figure}
+\noindent
+
 
 \begin{figure}[H]
+\centering
 \begin{tikzpicture}
-  \begin{axis}[ 
-    xlabel=$x$,
-    ylabel={$f(x) = x^2 - x +4$}
-  ] 
-    \addplot {x^2 - x +4}; 
-  \end{axis}
+\begin{axis}[ 
+	title={\textbf{Genetic algorithm experiments on the \texttt{blackscholes} benchmark}},
+	title style={yshift=1.5em},
+    xlabel={Generation count},
+    ylabel={Time taken},
+    ymajorgrids=true,
+    xmajorgrids=true,
+    grid style=dashed,
+    legend pos=outer north east,
+] 
+\addplot [color=blue, mark=circle,] coordinates {(1, 56339) (2, 56339) (3, 55892) (4, 55892) (5, 55892) (6, 55835) (7, 55835) (8, 55835) (9, 55835) (10, 55704) (11, 55704) (12, 55704) (13, 55704) (14, 55704) (15, 55704) (16, 55704) (17, 55704) (18, 55704) (19, 50331) (20, 55704) (21, 55500) (22, 55500) (23, 52763) (24, 49653) (25, 55500) (26, 55500) (27, 55500) (28, 55500) (29, 55500) (30, 54708) (31, 54708) (32, 54708) (33, 54708) (34, 54584) (35, 54584) (36, 54584) (37, 54584) (38, 54461) (39, 54461) (40, 54461) (41, 54461) (42, 54461) (43, 54461) (44, 54461) (45, 54461) (46, 54461) (47, 54461)};
+\label{plot:blackscholes1}
+\addlegendentry{Experiment 1}
+
+\addplot [color=red, mark=circle,] coordinates {(1, 53593) (2, 52033) (3, 50848) (4, 50848) (5, 50403) (6, 50403) (7, 50403) (8, 50403) (9, 50403) (10, 49483) (11, 49483) (12, 49483) (13, 49483) (14, 48857) (15, 48857) (16, 48857) (17, 48857) (18, 48857) (19, 48857) (20, 48857) (21, 48857) (22, 48857) (23, 48857) (24, 48857) (25, 48857) (26, 48857) (27, 48857) (28, 48857) (29, 48857) (30, 48584) (31, 48584) (32, 48584) (33, 48584) (34, 48584) (35, 48584) (36, 48584) (37, 48584) (38, 48584) (39, 48584) (40, 48584) (41, 48584) (42, 48584) (43, 48584) (44, 48584) (45, 48584)};
+\label{plot:blackscholes2}
+\addlegendentry{Experiment 2}
+
+\end{axis}
 \end{tikzpicture}
 \end{figure}
 
+\begin{figure}[H]
+\begin{tikzpicture}
+\begin{axis}[
+	title={\textbf{Genetic algorithm experiments on the \texttt{bodytrack} benchmark}},
+	title style={yshift=1.5em},
+    xlabel={Generation count},
+    ylabel={Time taken},
+    ymajorgrids=true,
+    xmajorgrids=true,
+    grid style=dashed,
+    legend pos=outer north east,
+] 
+\addplot [color=blue, mark=circle,] coordinates {(2, 210986) (3, 210986) (4, 210986) (5, 205146) (6, 205146) (7, 205146) (8, 205146) (9, 205146) (10, 205146) (11, 205146) (12, 205146) (13, 205146) (14, 194954) (15, 194954) (16, 194954) (17, 194954) (18, 194954) (19, 194954) (20, 194954) (21, 194954) (22, 194954) (23, 194954) (24, 194954) (25, 194954) (26, 194954) (27, 194954) (28, 194954) (29, 194954) (30, 184958) (31, 184958) (32, 184958) (33, 184958) (34, 184958) (35, 184958)}; 
+\label{plot:bodytrack1}
+\addlegendentry{Experiment 1}
+
+\addplot [color=red, mark=circle,] coordinates {(1, 220865) (2, 212348) (3, 206616) (4, 206616) (5, 204856) (6, 196318) (7, 192067) (8, 192067) (9, 192067) (10, 192067) (11, 192067) (12, 192056) (13, 192056) (14, 192056) (15, 192056) (16, 192056) (17, 190711) (18, 190711) (19, 190711) (20, 190711) (21, 190711) (22, 186685) (23, 186625) (24, 186625) (25, 186625) (26, 186594) (27, 186594) (28, 186594) (29, 186594) (30, 186594) (31, 186594) (32, 186594) (33, 186594) (34, 186594) (35, 186594)};
+\label{plot:bodytrack2}
+\addlegendentry{Experiment 2}
+
+
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+
+
+
+
+\begin{figure}[H]
+\begin{minipage}{0.5\textwidth}
+\begin{tikzpicture}[scale=0.6]
+\begin{axis}[
+	title={\texttt{bodytrack}},
+	title style={yshift=1.5em},
+    xlabel={Generation count},
+    ylabel={Time taken},
+    xmin=0,
+    xmax=35,
+    ymajorgrids=true,
+    xmajorgrids=true,
+    grid style=dashed,
+] 
+\addplot [color=blue, mark=circle,] coordinates {(1, 231860.05555555556) (2, 229007.88) (3, 218628.03846153847) (4, 213711.34615384616) (5, 212184.23076923078) (6, 211468.75) (7, 211545.6) (8, 214313.83333333334) (9, 210605.76) (10, 212104.24) (11, 209150.12) (12, 206299.42307692306) (13, 206915.04347826086) (14, 207009.53846153847) (15, 208497.20833333334) (16, 205663.42307692306) (17, 201958.84615384616) (18, 195927.32) (19, 198685.08) (20, 194954) (21, 196567.34615384616) (22, 196107.44) (23, 197356.84) (24, 198886.64) (25, 200816.8076923077) (26, 197869.07692307694) (27, 200676.16) (28, 196945.84615384616) (29, 197271.2) (30, 198136.61538461538) (31, 194157.32) (32, 191576.88) (33, 189287.64) (34, 185991.8076923077) (35, 186304.57692307694)}; 
+\label{plot:bodytrack1-stdev}
+
+\addplot [color=red, mark=circle,] coordinates {(1, 306714.5641025641) (2, 227957) (3, 225956.275) (4, 221548.6) (5, 217905.36585365853) (6, 220861.4) (7, 218618.975) (8, 216569.2) (9, 214210.07692307694) (10, 209076.8780487805) (11, 206232.55) (12, 206578.975) (13, 204224) (14, 203101.05) (15, 202741.275) (16, 213535.0487804878) (17, 214123.85) (18, 200974) (19, 202967.225) (20, 203836.075) (21, 212641.8536585366) (22, 208925.275) (23, 200539.25) (24, 203474.8) (25, 207635.1) (26, 210162.0243902439) (27, 205774.48780487804) (28, 201236.9756097561) (29, 206833.95) (30, 206980.8) (31, 206351.1219512195) (32, 210508.9) (33, 210484.35) (34, 204121.3947368421) (35, 204678.625)};
+\label{plot:bodytrack2-stdev}
+
+\addplot [color=green, mark=circle,] coordinates {(0, 232141) (35, 232141)};
+\label{plot:bodytrack-random}
+
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+%
+\begin{minipage}{0.5\textwidth}
+\begin{tikzpicture}[scale=0.6]
+\begin{axis}[
+	title={\texttt{blackscholes}},
+	title style={yshift=1.5em},
+    xlabel={Generation count},
+    ylabel={Time taken},
+    xmin=0,
+    xmax=45,
+    ymajorgrids=true,
+    xmajorgrids=true,
+    grid style=dashed,
+    legend style={font=\fontsize{14}{6}\selectfont},
+    legend pos=outer north east,
+] 
+\addplot [color=blue, mark=circle,] coordinates {(1, 66634.44) (2, 63035.5) (3, 61486.92307692308) (4, 59395.192307692305) (5, 58602.12) (6, 57823.57692307692) (7, 59404.64) (8, 58258.730769230766) (9, 58093.807692307695) (10, 58761.12) (11, 57925.53846153846) (12, 59540.541666666664) (13, 59018.52) (14, 58331.88461538462) (15, 57783.11538461538) (16, 59189.88) (17, 59144.2) (18, 59165.48) (19, 57634.346153846156) (20, 60534.88) (21, 58357.64) (22, 58248.84) (23, 59130.380952380954) (24, 55154) (25, 61612.44) (26, 60029.03846153846) (27, 57741.153846153844) (28, 58823.53846153846) (29, 58856.692307692305) (30, 58200.03846153846) (31, 59129.2) (32, 57918.16) (33, 59019.42307692308) (34, 57868.53846153846) (35, 59641) (36, 58069.2) (37, 58266.42307692308) (38, 56136.307692307695) (39, 58209.96153846154) (40, 56852.36) (41, 56692.88461538462) (42, 55925.846153846156) (43, 58099.28) (44, 57950.730769230766) (45, 59109.36)}; 
+\label{plot:bodytrack1-stdev}
+\addlegendentry{Experiment 1}
+
+\addplot [color=red, mark=circle,] coordinates {(1, 67355.8) (2, 62320.85) (3, 59967.560975609755) (4, 56603.05) (5, 56674.95) (6, 56435) (7, 55519.25) (8, 55046.829268292684) (9, 55496.58536585366) (10, 53423.525) (11, 53415.73170731707) (12, 52954) (13, 54138.475) (14, 52910.9756097561) (15, 53934.51282051282) (16, 53518.90243902439) (17, 53414.634146341465) (18, 52301.07317073171) (19, 54186.78048780488) (20, 53856.634146341465) (21, 52791.560975609755) (22, 55395.179487179485) (23, 53793.55) (24, 54342.925) (25, 53375.73170731707) (26, 55284.375) (27, 54432.2) (28, 54245.9756097561) (29, 53776.675) (30, 53935.53658536585) (31, 55089.15) (32, 53616.825) (33, 54239.925) (34, 53790.275) (35, 52750.9756097561) (36, 52761.95) (37, 54524.45) (38, 54200.35) (39, 53506.10256410256) (40, 53098.5) (41, 53202.92682926829) (42, 53099.68292682927) (43, 52662.025) (44, 51975.825) (45, 55287.95)};
+\label{plot:bodytrack2-stdev}
+\addlegendentry{Experiment 2}
+
+\addplot [color=green, mark=circle,] coordinates {(0, 67325) (45, 67325)};
+\label{plot:bodytrack-random}
+\addlegendentry{Average of random}
+
+\end{axis}
+\end{tikzpicture}
+\end{minipage}
+\caption{Mean time taken by experiments}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\end{figure}
 
 - more time on genetic algorithm should tend to better result -> especially if given more diversity
 - random gets faster schedule quicker, but less likely over time to find good schedule, whereas genetic algorithm guarantees good schedule over time as long as high diversity.

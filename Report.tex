@@ -281,8 +281,6 @@ Optimise size of schedule as much as possible to prevent entire lower half being
 
 \subsection{Experimentation}
 The two benchmarks \texttt{sched-blackscholes_gen} and \texttt{sched-bodytrack_gen} are used in the experimentation. Initially, a na\"{i}ve experiment was run using arbitrary parameters to see how well the genetic algorithm performed after many generations. Afterwards, the experiment was improved by adjusting the parameters to improve diversity. The results of both experiments are later compared with the default weighted RNG scheduler and a completely random approach. 
-\n
-
 \subsubsection{Experiment 1}
 In the first na\"{i}ve experiment, the following parameters were chosen:
 \begin{itemize}
@@ -307,7 +305,7 @@ Increased mutation also due to local maxima. Perhaps crossover is not effective 
 
 \subsection{Results}
 \subsubsection{Benchmark properties}
-The two benchmarks chosen for this experiment are \texttt{blackscholes} and \texttt{bodytrack}. 
+The two benchmarks chosen for this experiment are \texttt{blackscholes} and \texttt{bodytrack}. First, a quick overview on how the performance of the default and random approach on the benchmarks. This will show how well these approaches work as well as if there are any distinct differences between the two benchmarks. Both the random and default approaches were run for 250 simulations. 
 \begin{figure}[H]
 \begin{minipage}{0.6\textwidth}
 \begin{tikzpicture}[scale=0.7]
@@ -315,16 +313,17 @@ The two benchmarks chosen for this experiment are \texttt{blackscholes} and \tex
     ybar,
     title={\texttt{blackscholes} benchmark},
    	title style={yshift=1em},
-    bar width=3em,
-    enlarge x limits=0.6,
+    bar width=2em,
+    enlarge x limits=0.4,
     legend style={at={(0.5,-0.15)},
       anchor=north,legend columns=-1},
     ylabel={Time taken},
-    symbolic x coords={Best,Average},
+    symbolic x coords={Best,Average, Median},
     xtick=data,
+    ymajorgrids=true, 
     ]
-\addplot coordinates {(Best,49708) (Average,67325)};
-\addplot coordinates {(Best,53932) (Average,66497.57)};
+\addplot coordinates {(Best,51847) (Average,66251) (Median, 66284)};
+\addplot coordinates {(Best,53932) (Average,66453) (Median, 65195)};
 \legend{Random,Default}
 \end{axis}
 \end{tikzpicture}
@@ -336,29 +335,32 @@ The two benchmarks chosen for this experiment are \texttt{blackscholes} and \tex
     ybar,
     title={\texttt{bodytrack} benchmark},
    	title style={yshift=1em},
-    bar width=3em,
-    enlarge x limits=0.6,
+    bar width=2em,
+    enlarge x limits=0.4,
     legend style={at={(0.5,-0.15)},
       anchor=north,legend columns=-1},
     ylabel={Time taken},
-    symbolic x coords={Best,Average},
+    symbolic x coords={Best,Average,Median},
     xtick=data,
+    ymajorgrids=true,
     ]
-\addplot coordinates {(Best,186594) (Average,232141)};
-\addplot coordinates {(Best,200000) (Average,200000)};
+\addplot coordinates {(Best,186594) (Average,231639) (Median, 233491)};
+\addplot coordinates {(Best,201618) (Average,237037) (Median, 235465)};
 \legend{Random,Default}
 \end{axis}
 \end{tikzpicture}
 \end{minipage}
 \caption{Best and average times taken by the random and default approach.}
 \end{figure}
-
-\begin{figure}
+\noindent There are a few interesting points to note about the random and default approaches. First, the random approach is able to find a faster schedule than the default. This is interesting as one would expect the default approach to be able to come up with good and fast schedules. This shows that better schedules can be found through search that improve upon those made by the default scheduler. Following this, it can be seen that the average times for random and default are quite similar. The median was also taken as an extra check to make sure the average was not skewed by anomalies, such as when the time taken is set to 0 for simulations which failed. This shows how the two approaches are similar in the kind of schedules being produced and an algorithm that can improve on a random approach should also improve against the default approach. 
+\n
+Another statistic of note is the variance, or standard deviation of the random and default approach. Here the standard deviation is divided by the mean to get the variability relative to the mean and to be able to compare the two benchmarks.
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}
 \begin{axis}[
     ybar,
-    title={Coefficient of variation for the two benchmarks}
+    title={Coefficient of variation for the two benchmarks},
    	title style={yshift=1em},
     bar width=3em,
     enlarge x limits=0.6,
@@ -366,20 +368,22 @@ The two benchmarks chosen for this experiment are \texttt{blackscholes} and \tex
       anchor=north,legend columns=-1},
     ymin=0,
     ylabel={Standard deviation / Mean},
+    ylabel style={yshift=2em},
     symbolic x coords={\texttt{blackscholes},\texttt{bodytrack}},
     xtick=data,
+    ymajorgrids=true,
     ]
-\addplot coordinates {(\texttt{blackscholes},2140) (\texttt{bodytrack},764)};
-\addplot coordinates {(\texttt{blackscholes},662) (\texttt{bodytrack},100)};
+\addplot coordinates {(\texttt{blackscholes},0.0906) (\texttt{bodytrack},0.05842)};
+\addplot coordinates {(\texttt{blackscholes},0.101) (\texttt{bodytrack},0.14492)};
 \legend{Random,Default}
 \end{axis}
 \end{tikzpicture}
 \caption{Coefficient of variation by the random and default approach.}
 \label{fig:variance}
 \end{figure}
-\noindent
+\noindent Again, it can be seen that the variation in schedules for the default approach is not necessarily better than that of random schedules. This may be due to some mistake or assumption by the scheduler which led to slower schedules than expected. A certain approach by the scheduler may be very effective for other benchmarks, but less useful for these benchmarks. Additionally, in the \texttt{bodytrack} benchmark, the low variation for random yet high variation for the default suggests the benchmark may be less sensitive to changes in the schedule. This could be due to the order of processes having little effect on the overall time taken.
 
-
+\subsubsection{Genetic algorithm results}
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
@@ -447,10 +451,10 @@ The two benchmarks chosen for this experiment are \texttt{blackscholes} and \tex
     xmajorgrids=true,
     grid style=dashed,
 ] 
-\addplot [color=blue, mark=circle,] coordinates {(1, 231860.05555555556) (2, 229007.88) (3, 218628.03846153847) (4, 213711.34615384616) (5, 212184.23076923078) (6, 211468.75) (7, 211545.6) (8, 214313.83333333334) (9, 210605.76) (10, 212104.24) (11, 209150.12) (12, 206299.42307692306) (13, 206915.04347826086) (14, 207009.53846153847) (15, 208497.20833333334) (16, 205663.42307692306) (17, 201958.84615384616) (18, 195927.32) (19, 198685.08) (20, 194954) (21, 196567.34615384616) (22, 196107.44) (23, 197356.84) (24, 198886.64) (25, 200816.8076923077) (26, 197869.07692307694) (27, 200676.16) (28, 196945.84615384616) (29, 197271.2) (30, 198136.61538461538) (31, 194157.32) (32, 191576.88) (33, 189287.64) (34, 185991.8076923077) (35, 186304.57692307694)}; 
+\addplot [color=blue, mark=circle,] coordinates {(1, 231860) (2, 229007.88) (3, 218628) (4, 213711) (5, 212184) (6, 211468.75) (7, 211545.6) (8, 214313) (9, 210605.76) (10, 212104.24) (11, 209150.12) (12, 206299) (13, 206915) (14, 207009) (15, 208497) (16, 205663) (17, 201958) (18, 195927.32) (19, 198685.08) (20, 194954) (21, 196567) (22, 196107.44) (23, 197356.84) (24, 198886.64) (25, 200816) (26, 197869) (27, 200676.16) (28, 196945) (29, 197271.2) (30, 198136) (31, 194157.32) (32, 191576.88) (33, 189287.64) (34, 185991) (35, 186304)}; 
 \label{plot:bodytrack1-stdev}
 
-\addplot [color=red, mark=circle,] coordinates {(1, 306714.5641025641) (2, 227957) (3, 225956.275) (4, 221548.6) (5, 217905.36585365853) (6, 220861.4) (7, 218618.975) (8, 216569.2) (9, 214210.07692307694) (10, 209076.8780487805) (11, 206232.55) (12, 206578.975) (13, 204224) (14, 203101.05) (15, 202741.275) (16, 213535.0487804878) (17, 214123.85) (18, 200974) (19, 202967.225) (20, 203836.075) (21, 212641.8536585366) (22, 208925.275) (23, 200539.25) (24, 203474.8) (25, 207635.1) (26, 210162.0243902439) (27, 205774.48780487804) (28, 201236.9756097561) (29, 206833.95) (30, 206980.8) (31, 206351.1219512195) (32, 210508.9) (33, 210484.35) (34, 204121.3947368421) (35, 204678.625)};
+\addplot [color=red, mark=circle,] coordinates {(1, 306714) (2, 227957) (3, 225956.275) (4, 221548.6) (5, 217905) (6, 220861.4) (7, 218618.975) (8, 216569.2) (9, 214210) (10, 209076) (11, 206232.55) (12, 206578.975) (13, 204224) (14, 203101.05) (15, 202741.275) (16, 213535) (17, 214123.85) (18, 200974) (19, 202967.225) (20, 203836.075) (21, 212641) (22, 208925.275) (23, 200539.25) (24, 203474.8) (25, 207635.1) (26, 210162) (27, 205774) (28, 201236) (29, 206833.95) (30, 206980.8) (31, 206351) (32, 210508.9) (33, 210484.35) (34, 204121) (35, 204678.625)};
 \label{plot:bodytrack2-stdev}
 
 \addplot [color=green, mark=circle,] coordinates {(0, 232141) (35, 232141)};
@@ -475,11 +479,11 @@ The two benchmarks chosen for this experiment are \texttt{blackscholes} and \tex
     legend style={font=\fontsize{14}{6}\selectfont},
     legend pos=outer north east,
 ] 
-\addplot [color=blue, mark=circle,] coordinates {(1, 66634.44) (2, 63035.5) (3, 61486.92307692308) (4, 59395.192307692305) (5, 58602.12) (6, 57823.57692307692) (7, 59404.64) (8, 58258.730769230766) (9, 58093.807692307695) (10, 58761.12) (11, 57925.53846153846) (12, 59540.541666666664) (13, 59018.52) (14, 58331.88461538462) (15, 57783.11538461538) (16, 59189.88) (17, 59144.2) (18, 59165.48) (19, 57634.346153846156) (20, 60534.88) (21, 58357.64) (22, 58248.84) (23, 59130.380952380954) (24, 55154) (25, 61612.44) (26, 60029.03846153846) (27, 57741.153846153844) (28, 58823.53846153846) (29, 58856.692307692305) (30, 58200.03846153846) (31, 59129.2) (32, 57918.16) (33, 59019.42307692308) (34, 57868.53846153846) (35, 59641) (36, 58069.2) (37, 58266.42307692308) (38, 56136.307692307695) (39, 58209.96153846154) (40, 56852.36) (41, 56692.88461538462) (42, 55925.846153846156) (43, 58099.28) (44, 57950.730769230766) (45, 59109.36)}; 
+\addplot [color=blue, mark=circle,] coordinates {(1, 66634.44) (2, 63035.5) (3, 61486) (4, 59395) (5, 58602.12) (6, 57823.57) (7, 59404.64) (8, 58258) (9, 58093.80) (10, 58761.12) (11, 57925) (12, 59540) (13, 59018.52) (14, 58331) (15, 57783) (16, 59189.88) (17, 59144.2) (18, 59165.48) (19, 57634) (20, 60534.88) (21, 58357.64) (22, 58248.84) (23, 59130) (24, 55154) (25, 61612.44) (26, 60029) (27, 57741) (28, 58823) (29, 58856) (30, 58200) (31, 59129.2) (32, 57918.16) (33, 59019) (34, 57868) (35, 59641) (36, 58069.2) (37, 58266) (38, 56136) (39, 58209) (40, 56852.36) (41, 56692) (42, 55925) (43, 58099.28) (44, 57950) (45, 59109.36)}; 
 \label{plot:bodytrack1-stdev}
 \addlegendentry{Experiment 1}
 
-\addplot [color=red, mark=circle,] coordinates {(1, 67355.8) (2, 62320.85) (3, 59967.560975609755) (4, 56603.05) (5, 56674.95) (6, 56435) (7, 55519.25) (8, 55046.829268292684) (9, 55496.58536585366) (10, 53423.525) (11, 53415.73170731707) (12, 52954) (13, 54138.475) (14, 52910.9756097561) (15, 53934.51282051282) (16, 53518.90243902439) (17, 53414.634146341465) (18, 52301.07317073171) (19, 54186.78048780488) (20, 53856.634146341465) (21, 52791.560975609755) (22, 55395.179487179485) (23, 53793.55) (24, 54342.925) (25, 53375.73170731707) (26, 55284.375) (27, 54432.2) (28, 54245.9756097561) (29, 53776.675) (30, 53935.53658536585) (31, 55089.15) (32, 53616.825) (33, 54239.925) (34, 53790.275) (35, 52750.9756097561) (36, 52761.95) (37, 54524.45) (38, 54200.35) (39, 53506.10256410256) (40, 53098.5) (41, 53202.92682926829) (42, 53099.68292682927) (43, 52662.025) (44, 51975.825) (45, 55287.95)};
+\addplot [color=red, mark=circle,] coordinates {(1, 67355.8) (2, 62320.85) (3, 59967) (4, 56603.05) (5, 56674.95) (6, 56435) (7, 55519.25) (8, 55046) (9, 55496) (10, 53423.525) (11, 53415) (12, 52954) (13, 54138.475) (14, 52910) (15, 53934) (16, 53518) (17, 53414) (18, 52301) (19, 54186) (20, 53856) (21, 52791) (22, 55395) (23, 53793.55) (24, 54342.925) (25, 53375) (26, 55284.375) (27, 54432.2) (28, 54245) (29, 53776.675) (30, 53935) (31, 55089.15) (32, 53616.825) (33, 54239.925) (34, 53790.275) (35, 52750) (36, 52761.95) (37, 54524.45) (38, 54200.35) (39, 53506) (40, 53098.5) (41, 53202) (42, 53099) (43, 52662.025) (44, 51975.825) (45, 55287.95)};
 \label{plot:bodytrack2-stdev}
 \addlegendentry{Experiment 2}
 
@@ -490,7 +494,7 @@ The two benchmarks chosen for this experiment are \texttt{blackscholes} and \tex
 \end{axis}
 \end{tikzpicture}
 \end{minipage}
-\caption{Mean time taken by experiments}
+\caption{Mean time taken in each generation by experiments}
 \end{figure}
 
 \begin{figure}[H]

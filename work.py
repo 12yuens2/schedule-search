@@ -27,11 +27,8 @@ def get_cpu_time(file):
 
 
 def get_active_hosts():
-    #hosts = ["pc3-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,70)]
-    hosts = ["pc2-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,99)]
-    hosts.remove("pc2-026-l.cs.st-andrews.ac.uk")
-    hosts.remove("pc2-040-l.cs.st-andrews.ac.uk")
-    hosts.remove("pc2-093-l.cs.st-andrews.ac.uk")
+    hosts = ["pc3-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,70)]
+    hosts += ["pc2-0"+str(host_id)+"-l.cs.st-andrews.ac.uk" for host_id in range(10,99)]
 
     print("Pinging hosts...")
     activehosts = []
@@ -46,37 +43,30 @@ def get_active_hosts():
 
     return activehosts
 
-
-#population 30:
+# Experiment 1
+# population 25:
 # mutation per genes: random 0 - length/10
-# crossover: random
-# selection: tournament 3
-#experiment_data = open("blackscholes3.data", "w")
-
-
-# population 40:
-# mutation per genes: random 0 - length/10
-# crossover: random
-# selection: tournament 3
-experiment_data = open("blackscholes2.data", "w")
-
-
-# population 40:
-# mutation per genes: random 0 - length/25
 # crossover: random
 # selection: tournament 3
 #experiment_data = open("blackscholes1.data", "w")
+#experiment_data = open("bodytrack1.data", "w")
 
+# Experiment 2
+# population 40:
+# mutation per genes: random 0 - length/100
+# crossover: random
+# selection: tournament 5
+#experiment_data = open("blackscholes2.data", "w")
+#experiment_data = open("bodytrack2.data", "w")
 
+for generation in range(40):
+    population = Population(40, 100000)
 
-population = Population(40, 200000)
-for generation in range(30):
     experiment_data.write("Generation " + str(generation) + ": \n")
     print("Start generation " + str(generation) + " at " + str(datetime.datetime.now()))
 
     activehosts = get_active_hosts()
 
-    
     processes = {}
     i = 0
     for chromosome in population.chromosomes:
@@ -95,8 +85,13 @@ for generation in range(30):
         i += 1
 
     # Wait for simulator processes to terminate
+    print("Waiting...")
     for (k,v) in processes.items():
-        processes[k] = v.wait()
+        try:
+            processes[k] = v.wait(timeout=3600)
+        except subprocess.TimeoutExpired:
+            print("timeout occurred.")
+            processes[k] = 1
 
     print("Simulations finished...")
     print("Time: " + str(datetime.datetime.now()))
@@ -122,10 +117,9 @@ for generation in range(30):
 
     # Save best schedule 
     best_child = population.elites(1)[0]
-    best_file = open("best-blackscholes2.txt", "w")
+    best_file = open("best-blackscholes1.txt", "w")
     best_file.write("".join(map(str, best_child.genes)))
     best_file.close()
-
     
     print("generation " + str(generation) + " finished hosts: " + str(finished_hosts) + "/" + str(len(processes)) + " best time: " + str(1 / population.elites(1)[0].fitness))
     print("---------------------------------------")

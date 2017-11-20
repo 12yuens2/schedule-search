@@ -110,16 +110,3 @@ def get_cpu_time(file):
     output = f.split("\t")
 
     return (output[output.index("Total_time=") + 1])
- 
-'''
-print(get_cpu_time("../cs4202_gensched/gem5/exps/1/sched_stats.txt"))
-    
-p = Population(10, 1000000)
-print(p.fitness())
-for i in range(500):
-    num_elites = random.randint(1, int(p.size/2))
-    p.evolve(num_elites)
-    print("generation " + str(i) + " , fitness: " + str(p.fitness()) + " , elites: " + str(num_elites) + " , best: " + str(p.elites(1)[0].fitness()))
-
-print(p.fitness())
-'''

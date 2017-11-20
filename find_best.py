@@ -58,27 +58,26 @@ def get_best(lines):
     print(best_times)   
 
 
-print("blackscholes random")
-f = open("blackscholes-random.data", "r")
+print("blackscholes 1")
+f = open("blackscholes1.data", "r")
 lines = f.read().splitlines()
-get_stdev(lines)
-get_mean(lines)
+get_best(lines)
 
    
-print("blackscholes default")
-f = open("blackscholes-default.data", "r")
+print("blackscholes 2")
+f = open("blackscholes2.data", "r")
 lines = f.read().splitlines()
-get_stdev(lines)
-get_mean(lines)
+get_best(lines)
 
-print("bodytrack random")
-f = open("bodytrack-random.data", "r")
-lines = f.read().splitlines()
-get_stdev(lines)
-get_mean(lines)
 
-print("bodytrack default")
-f = open("bodytrack-default.data", "r")
+
+print("bodytrack 1")
+f = open("bodytrack1.data", "r")
 lines = f.read().splitlines()
-get_stdev(lines)
-get_mean(lines)
+get_best(lines)
+
+   
+print("bodytrack 2")
+f = open("bodytrack2.data", "r")
+lines = f.read().splitlines()
+get_best(lines)
